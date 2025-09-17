@@ -8,7 +8,7 @@ from database import SessionLocal
 from starlette import status
 from .auth import get_current_user
 
-router = APIRouter(prefix="/todo", tags={"todo"})
+router = APIRouter(prefix="/todo", tags=["todo"])
 
 
 def get_db():
@@ -114,5 +114,5 @@ async def delete_todo(
 
     db.delete(todo_model)
     # usa esta forma cuando borres muchos registros
-    # db.query(Todos).filter(Todos.id == todo_id).delete()
+    # db.query(Todos).filter(Todos.id == todo_id).filter(Todos.owner_id == user.get("id")).delete()
     db.commit()
