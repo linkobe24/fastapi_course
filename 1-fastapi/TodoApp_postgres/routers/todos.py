@@ -3,8 +3,8 @@ from typing import Annotated
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 from fastapi import Depends, HTTPException, Path
-from models import Todos
-from database import SessionLocal
+from ..models import Todos
+from ..database import SessionLocal
 from starlette import status
 from .auth import get_current_user
 
@@ -33,7 +33,7 @@ class TodoRequest(BaseModel):
 @router.get("/", status_code=status.HTTP_200_OK)
 async def read_all(db: db_dependency, user: user_dependency):
     if user is None:
-        raise HTTPException(status_code=401, detail="Authentication Failed.")
+        raise HTTPException(status_code=401, detail="Authentication Failed")
     return db.query(Todos).filter(Todos.owner_id == user.get("id")).all()
 
 
@@ -42,7 +42,7 @@ async def read_todo(
     user: user_dependency, db: db_dependency, todo_id: int = Path(gt=0)
 ):
     if user is None:
-        raise HTTPException(status_code=401, detail="Authentication Failed.")
+        raise HTTPException(status_code=401, detail="Authentication Failed")
 
     todo_model = (
         db.query(Todos)
@@ -76,7 +76,7 @@ async def update_todo(
     todo_id: int = Path(gt=0),
 ):
     if user is None:
-        raise HTTPException(status_code=401, detail="Authentication Failed.")
+        raise HTTPException(status_code=401, detail="Authentication Failed")
 
     todo_model = (
         db.query(Todos)
@@ -85,7 +85,7 @@ async def update_todo(
         .first()
     )
     if todo_model is None:
-        raise HTTPException(status_code=404, detail="Todo not found.")
+        raise HTTPException(status_code=404, detail="Todo not found")
 
     todo_model.title = todo_request.title
     todo_model.description = todo_request.description
@@ -101,7 +101,7 @@ async def delete_todo(
     user: user_dependency, db: db_dependency, todo_id: int = Path(gt=0)
 ):
     if user is None:
-        raise HTTPException(status_code=401, detail="Authentication Failed.")
+        raise HTTPException(status_code=401, detail="Authentication Failed")
 
     todo_model = (
         db.query(Todos)
@@ -110,7 +110,7 @@ async def delete_todo(
         .first()
     )
     if todo_model is None:
-        raise HTTPException(status_code=404, detail="Todo not found.")
+        raise HTTPException(status_code=404, detail="Todo not found")
 
     db.delete(todo_model)
     # usa esta forma cuando borres muchos registros

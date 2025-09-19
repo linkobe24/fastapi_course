@@ -3,8 +3,8 @@ from typing import Annotated
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 from fastapi import Depends, HTTPException, Path
-from models import Users
-from database import SessionLocal
+from ..models import Users
+from ..database import SessionLocal
 from starlette import status
 from .auth import get_current_user
 from passlib.context import CryptContext
@@ -51,7 +51,7 @@ async def change_password(
         user_verification.password, user_model.hashed_password
     ):
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Password does not match."
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Password does not match"
         )
 
     user_model.hashed_password = bcrypt_context.hash(user_verification.new_password)
