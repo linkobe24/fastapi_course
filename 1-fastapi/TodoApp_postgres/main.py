@@ -1,11 +1,21 @@
+from fastapi import FastAPI, Request, status
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import RedirectResponse
 from .models import Base
 from .database import engine
-from fastapi import FastAPI
 from .routers import auth, todos, admin, users
 
 app = FastAPI()
 
 Base.metadata.create_all(bind=engine)
+
+
+app.mount("/static", StaticFiles(directory="TodoApp_postgres/static"), name="static")
+
+
+@app.get("/")
+def test(request: Request):
+    return RedirectResponse(url="/todos/todo-page", status_code=status.HTTP_302_FOUND)
 
 
 @app.get("/healthy")

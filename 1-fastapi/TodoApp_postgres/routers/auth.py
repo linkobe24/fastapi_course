@@ -1,14 +1,16 @@
+from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
+from sqlalchemy.orm import Session
 from datetime import datetime, timedelta, timezone
 from typing import Annotated
-from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
-from ..database import SessionLocal
-from sqlalchemy.orm import Session
-from ..models import Users
-from starlette import status
 from passlib.context import CryptContext
-from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
+from starlette import status
 from jose import jwt, JWTError
+from ..database import SessionLocal
+from ..models import Users
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -29,6 +31,23 @@ db_dependency = Annotated[Session, Depends(get_db)]
 
 bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_bearer = OAuth2PasswordBearer(tokenUrl="auth/token")
+
+templates = Jinja2Templates(directory="TodoApp_postgres/templates")
+router.mount("/static", StaticFiles(directory="TodoApp_postgres/static"), name="static")
+
+
+### Pages ###
+@router.get("/login-page")
+def render_login_page(request: Request):
+    return templates.TemplateResponse("login.html", {"request": request})
+
+
+@router.get("/register-page")
+def render_register_page(request: Request):
+    return templates.TemplateResponse("register.html", {"request": request})
+
+
+### functions ###
 
 
 def authenticate_user(username: str, password: str, db):
@@ -75,12 +94,15 @@ class CreateUserRequest(BaseModel):
     last_name: str
     password: str
     role: str
-    phone_nombre: str = Field(gt=0, lt=13)
+    phone_number: str
 
 
 class Token(BaseModel):
     access_token: str
     token_type: str
+
+
+### Endpoints ###
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
@@ -92,7 +114,7 @@ async def create_user(db: db_dependency, create_user_request: CreateUserRequest)
         last_name=create_user_request.last_name,
         hashed_password=bcrypt_context.hash(create_user_request.password),
         role=create_user_request.role,
-        phone_number=create_user_request.phone_nombre,
+        phone_number=create_user_request.phone_number,
         is_active=True,
     )
 
